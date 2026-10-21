@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 export interface AppConfig {
@@ -42,11 +42,22 @@ function numberFrom(envValue: string | undefined, fallback: number): number {
   return parsed
 }
 
+function readOptionalConfig(path: string): Partial<ConfigFile> {
+  if (!existsSync(path)) return {}
+  return JSON.parse(readFileSync(path, 'utf8')) as Partial<ConfigFile>
+}
+
+function hostList(entries: string[] | undefined): string[] {
+  return (entries ?? []).map((entry) => entry.trim()).filter(Boolean)
+}
+
 export function loadConfig(cwd = process.cwd(), overrides: Partial<AppConfig> = {}): AppConfig {
   const file = JSON.parse(readFileSync(resolve(cwd, 'config/default.json'), 'utf8')) as ConfigFile
+  const local = readOptionalConfig(resolve(cwd, 'config/local.json'))
+  const fromFiles = [...new Set([...hostList(file.allowedHosts), ...hostList(local.allowedHosts)])]
   const allowed = process.env.ALLOWED_HOSTS
-    ? process.env.ALLOWED_HOSTS.split(',').map((entry) => entry.trim()).filter(Boolean)
-    : file.allowedHosts
+    ? hostList(process.env.ALLOWED_HOSTS.split(','))
+    : fromFiles
 
   const config: AppConfig = {
     host: process.env.HOST || file.host,

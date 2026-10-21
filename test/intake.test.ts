@@ -4,7 +4,7 @@ import { mkdtemp } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { intakeHar } from '../src/intake/har'
-import { intakeJourney, splitSteps } from '../src/intake/journey'
+import { applyStep, intakeJourney, splitSteps } from '../src/intake/journey'
 import { intakeOpenApi } from '../src/intake/openapi'
 import { TargetNotAllowedError } from '../src/security/allowlist'
 import { testConfig } from './helpers'
@@ -113,7 +113,12 @@ describe('intakes', () => {
             request: {
               method: 'GET',
               url: 'http://127.0.0.1:4010/profile',
-              headers: [{ name: 'Authorization', value: 'Bearer abcdefghijk' }]
+              headers: [
+                { name: 'Authorization', value: 'Bearer abcdefghijk' },
+                { name: ':path', value: '/profile' },
+                { name: ':method', value: 'GET' },
+                { name: 'Accept', value: 'application/json' }
+              ]
             },
             response: { status: 200, content: { mimeType: 'application/json', text: '{"ok":true}' } }
           },
@@ -135,6 +140,9 @@ describe('intakes', () => {
     assert.equal(login.extractors?.[0].name, 'token')
     assert.equal(login.extractors?.[0].expression, '$.token')
     assert.equal(profile.headers?.Authorization, undefined)
+    assert.equal(profile.headers?.[':path'], undefined)
+    assert.equal(profile.headers?.[':method'], undefined)
+    assert.equal(profile.headers?.Accept, 'application/json')
     assert.equal(draft.model.auth?.type, 'bearer')
     assert.equal(draft.model.scenarios[0].calls.length, 2)
   })
@@ -143,5 +151,25 @@ describe('intakes', () => {
     assert.deepEqual(splitSteps('open /health then click Login'), ['open /health', 'click Login'])
     const dir = await mkdtemp(join(tmpdir(), 'journey-'))
     await assert.rejects(() => intakeJourney({ url: 'https://example.com', steps: 'click Login' }, config, dir), TargetNotAllowedError)
+  })
+
+  it('names the visible controls when a journey click cannot find its target', async () => {
+    const page = {
+      getByRole: () => page.locatorChain,
+      getByText: () => page.locatorChain,
+      getByLabel: () => page.locatorChain,
+      goto: async () => undefined,
+      locator: () => ({ allTextContents: async () => ['Import', 'Export', 'Import'] }),
+      locatorChain: {
+        or: () => page.locatorChain,
+        first: () => page.locatorChain,
+        click: async () => { throw new Error('locator.click: Timeout 8000ms exceeded.\nCall log:\n- waiting for getByText(\'test all feature\').first()') },
+        fill: async () => undefined
+      }
+    }
+    await assert.rejects(
+      () => applyStep(page, 'test all feature', 'https://reel-azure.vercel.app'),
+      /No control matches "test all feature"[\s\S]*Visible controls: Import, Export/
+    )
   })
 })

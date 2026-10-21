@@ -48,6 +48,9 @@ async function recordJourney(target: URL, steps: string[], harPath: string): Pro
     })
     const page = await context.newPage()
     await page.goto(target.href, { waitUntil: 'domcontentloaded', timeout: 20000 })
+    if (page.waitForLoadState) {
+      await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => undefined)
+    }
     for (const step of steps) {
       await applyStep(page, step, target.origin)
     }
@@ -69,9 +72,11 @@ interface ContextLike {
 
 interface PageLike {
   goto: (url: string, options: { waitUntil: 'domcontentloaded'; timeout: number }) => Promise<unknown>
+  waitForLoadState?: (state: 'networkidle', options: { timeout: number }) => Promise<void>
   getByRole: (role: 'link' | 'button', options: { name: string }) => LocatorLike
   getByLabel: (text: string) => LocatorLike
   getByText: (text: string, options?: { exact: boolean }) => LocatorLike
+  locator: (selector: string) => { allTextContents: () => Promise<string[]> }
 }
 
 interface LocatorLike {
@@ -84,8 +89,7 @@ interface LocatorLike {
 export async function applyStep(page: PageLike, step: string, origin: string): Promise<void> {
   const click = /^(?:click|press|tap)\s+(?:on\s+)?["']?(.+?)["']?$/i.exec(step)
   if (click) {
-    const name = click[1]
-    await page.getByRole('link', { name }).or(page.getByRole('button', { name })).or(page.getByText(name)).first().click({ timeout: 8000 })
+    await clickNamed(page, click[1])
     return
   }
 
@@ -103,5 +107,27 @@ export async function applyStep(page: PageLike, step: string, origin: string): P
     return
   }
 
-  await page.getByText(step, { exact: false }).first().click({ timeout: 8000 })
+  await clickNamed(page, step)
+}
+
+async function clickNamed(page: PageLike, name: string): Promise<void> {
+  const target = page.getByRole('link', { name }).or(page.getByRole('button', { name })).or(page.getByText(name, { exact: false })).first()
+  try {
+    await target.click({ timeout: 8000 })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    if (!/Timeout \d+ms exceeded/i.test(message)) throw error
+    const controls = await visibleControls(page)
+    const listed = controls.length > 0 ? ` Visible controls: ${controls.join(', ')}.` : ''
+    throw new Error(`No control matches "${name}".${listed} Use a step such as "click Export".`)
+  }
+}
+
+async function visibleControls(page: PageLike): Promise<string[]> {
+  try {
+    const texts = await page.locator('a, button, [role="button"], [role="link"]').allTextContents()
+    return [...new Set(texts.map((text) => text.replace(/\s+/g, ' ').trim()).filter(Boolean))].slice(0, 20)
+  } catch {
+    return []
+  }
 }

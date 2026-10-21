@@ -37,7 +37,7 @@ export function assertAllowedUrl(target: string, allowedHosts: string[]): URL {
 
   const allowed = new Set(allowedHosts.map(normalizeHost).filter(Boolean))
   if (!allowed.has(host)) {
-    throw new TargetNotAllowedError(`Host ${host} is not in ALLOWED_HOSTS`)
+    throw new TargetNotAllowedError(`Host ${host} is not in ALLOWED_HOSTS. Add it to config/local.json, then restart.`)
   }
 
   return url

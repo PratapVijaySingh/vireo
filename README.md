@@ -74,7 +74,13 @@ Each job stops after at most three iterations.
 
 ## Configure
 
-Defaults live in [config/default.json](config/default.json). Environment variables override them:
+Defaults live in [config/default.json](config/default.json). Add hosts you are allowed to test in `config/local.json` (this file stays on your machine):
+
+```json
+{ "allowedHosts": ["my-app.example.com"] }
+```
+
+Restart after editing it. `config/local.json` is merged with the defaults. Environment variables override them:
 
 | Variable | Purpose |
 | --- | --- |
@@ -82,7 +88,7 @@ Defaults live in [config/default.json](config/default.json). Environment variabl
 | `LLM_BASE_URL` | OpenAI-compatible base URL. Default `https://api.openai.com/v1` |
 | `LLM_MODEL` | Model name. Default `gpt-4o-mini` |
 | `LLM_API_KEY` | Key for the planner and reviewer |
-| `ALLOWED_HOSTS` | Comma-separated hostnames. Default `127.0.0.1,localhost` |
+| `ALLOWED_HOSTS` | Comma-separated hostnames. When set, this replaces the file list. Default `127.0.0.1,localhost` |
 | `MAX_THREADS` | Hard cap. Default `20` |
 | `MAX_DURATION_SEC` | Hard cap. Default `120` |
 | `PORT` | UI and API port. Default `3030` |

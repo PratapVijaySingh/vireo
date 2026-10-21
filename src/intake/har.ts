@@ -120,6 +120,7 @@ function callFromEntry(entry: HarEntry, url: URL, names: Set<string>): HttpCall 
   const headers: Record<string, string> = {}
   for (const header of entry.request.headers ?? []) {
     const name = header.name.toLowerCase()
+    if (name.startsWith(':')) continue
     if (['host', 'content-length', 'connection', 'accept-encoding', 'cookie'].includes(name)) continue
     headers[header.name] = header.value
   }
