@@ -1,0 +1,16 @@
+{
+  "host": "127.0.0.1",
+  "port": 3030,
+  "jmeterBin": "",
+  "llmBaseUrl": "https://api.openai.com/v1",
+  "llmModel": "gpt-4o-mini",
+  "llmApiKey": "",
+  "allowedHosts": ["127.0.0.1", "localhost"],
+  "maxThreads": 20,
+  "maxDurationSec": 120,
+  "defaultThreads": 5,
+  "defaultDurationSec": 60,
+  "defaultRampUpSec": 5,
+  "maxIterations": 3,
+  "dataDir": "data/jobs"
+}

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Feathers Wand</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"></span>
+      <div>
+        <p class="eyebrow">JMeter workbench</p>
+        <h1>Feathers Wand</h1>
+      </div>
+    </div>
+    <div id="status-bar" class="status-bar" aria-live="polite"></div>
+  </header>
+
+  <main class="layout">
+    <section class="card" aria-labelledby="new-heading">
+      <h2 id="new-heading">New measurement</h2>
+      <p class="lede">Describe an API, paste a capture, or record a short journey. The agent writes a JMeter script, runs it, and revises script defects.</p>
+      <form id="job-form">
+        <fieldset>
+          <legend>Source</legend>
+          <div class="choices">
+            <label><input type="radio" name="source" value="openapi" checked> OpenAPI or Postman</label>
+            <label><input type="radio" name="source" value="har"> HAR capture</label>
+            <label><input type="radio" name="source" value="journey"> URL and journey</label>
+          </div>
+        </fieldset>
+
+        <div data-panel="openapi">
+          <label for="spec">Spec JSON</label>
+          <textarea id="spec" name="spec" rows="10" spellcheck="false" placeholder='{"openapi":"3.0.3","info":{"title":"Local","version":"1.0.0"},"servers":[{"url":"http://127.0.0.1:4010"}],"paths":{"/health":{"get":{"responses":{"200":{"description":"ok"}}}}}}'></textarea>
+          <div class="row">
+            <label class="file">Upload JSON<input id="spec-file" type="file" accept="application/json,.json"></label>
+            <button type="button" id="sample-spec" class="ghost">Use local sample</button>
+          </div>
+        </div>
+
+        <div data-panel="har" hidden>
+          <label for="har">HAR JSON</label>
+          <textarea id="har" name="har" rows="10" spellcheck="false" placeholder='{"log":{"entries":[...]}}'></textarea>
+          <label class="file">Upload HAR<input id="har-file" type="file" accept="application/json,.har,.json"></label>
+        </div>
+
+        <div data-panel="journey" hidden>
+          <label for="url">Base URL</label>
+          <input id="url" name="url" type="url" placeholder="http://127.0.0.1:4010" autocomplete="off">
+          <label for="steps">Journey</label>
+          <textarea id="steps" name="steps" rows="4" placeholder="click Login then go to /account"></textarea>
+        </div>
+
+        <fieldset>
+          <legend>Goal</legend>
+          <div class="grid">
+            <label>p95 under (ms)<input id="p95" name="p95" type="number" min="1" step="1" value="500"></label>
+            <label>Max error rate (%)<input id="error-rate" name="errorRate" type="number" min="0" step="0.1" value="1"></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Load</legend>
+          <div class="grid three">
+            <label>Threads<input id="threads" name="threads" type="number" min="1" step="1"></label>
+            <label>Ramp-up (s)<input id="ramp" name="ramp" type="number" min="0" step="1"></label>
+            <label>Duration (s)<input id="duration" name="duration" type="number" min="1" step="1"></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Credentials</legend>
+          <label for="auth">Auth</label>
+          <select id="auth" name="auth">
+            <option value="none">None yet</option>
+            <option value="bearer">Bearer token</option>
+            <option value="basic">Basic auth</option>
+          </select>
+          <div id="auth-bearer" hidden>
+            <label for="token">Token</label>
+            <input id="token" name="token" type="password" autocomplete="off">
+          </div>
+          <div id="auth-basic" class="grid" hidden>
+            <label>Username<input id="username" name="username" autocomplete="off"></label>
+            <label>Password<input id="password" name="password" type="password" autocomplete="off"></label>
+          </div>
+        </fieldset>
+
+        <p id="form-error" class="error" role="alert"></p>
+        <button type="submit" id="submit">Create and run</button>
+      </form>
+    </section>
+
+    <section class="runs">
+      <div class="card list-card">
+        <h2>Runs</h2>
+        <div id="job-list" class="job-list"></div>
+      </div>
+      <div id="job-detail" class="card detail" aria-live="polite"></div>
+    </section>
+  </main>
+  <script src="/app.js" type="module"></script>
+</body>
+</html>
