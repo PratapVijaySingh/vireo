@@ -1,6 +1,6 @@
-# Using Feathers Wand
+# Using Vireo
 
-Feathers Wand is a local workbench that turns an API description into an Apache JMeter script, runs it, and reports whether the goal was met.
+Vireo is a local workbench that turns an API description into an Apache JMeter script, runs it, and reports whether the goal was met.
 
 You give it one of three inputs:
 
@@ -28,8 +28,8 @@ Optional:
 - Playwright Chromium, only for the URL-and-journey source
 
 ```bash
-git clone https://github.com/PratapVijaySingh/jemeter-feathers-wand.git
-cd jemeter-feathers-wand
+git clone https://github.com/PratapVijaySingh/vireo.git
+cd vireo
 npm install
 ```
 

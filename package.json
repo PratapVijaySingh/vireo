@@ -1,7 +1,7 @@
 {
-  "name": "jemeter-feathers-wand",
+  "name": "vireo",
   "version": "0.1.0",
-  "description": "Agents that write, run, and refine JMeter performance scripts.",
+  "description": "Vireo writes, runs, and refines JMeter performance scripts.",
   "private": true,
   "type": "module",
   "engines": {

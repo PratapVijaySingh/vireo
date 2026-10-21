@@ -1,4 +1,4 @@
-# Feathers Wand
+# Vireo
 
 Agents that write, run, and refine [Apache JMeter](https://jmeter.apache.org/) scripts for HTTP APIs and web apps you are allowed to test.
 

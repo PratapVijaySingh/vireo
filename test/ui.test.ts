@@ -32,7 +32,7 @@ describe('workbench UI', () => {
     const response = await fetch(base)
     assert.equal(response.status, 200)
     const html = await response.text()
-    assert.match(html, /Feathers Wand/)
+    assert.match(html, /Vireo/)
     assert.match(html, /New measurement/)
   })
 

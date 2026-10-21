@@ -11,7 +11,7 @@ if (isMain) {
   app.listen(config.port, config.host).then((server) => {
     const address = server.address()
     const port = typeof address === 'object' && address ? address.port : config.port
-    console.log(`Feathers Wand UI at http://${config.host}:${port}`)
+    console.log(`Vireo at http://${config.host}:${port}`)
   })
 }
 

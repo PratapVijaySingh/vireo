@@ -5,7 +5,7 @@ import { loadConfig, type AppConfig } from '../src/config'
 import type { SamplerStats } from '../src/jmeter/results'
 
 export async function tempDir(): Promise<string> {
-  return mkdtemp(join(tmpdir(), 'jemeter-feathers-wand-'))
+  return mkdtemp(join(tmpdir(), 'vireo-'))
 }
 
 export async function removeDir(dir: string): Promise<void> {
