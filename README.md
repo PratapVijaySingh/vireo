@@ -4,7 +4,9 @@ Agents that write, run, and refine [Apache JMeter](https://jmeter.apache.org/) s
 
 Give it an OpenAPI or Postman document, a HAR capture, or a URL plus a short journey. It turns that into one test-plan model, renders a real `.jmx` file, runs it with the JMeter CLI, and revises script defects from the results. A slow application is reported as a performance finding. The reviewer does not delete requests or loosen the goal to force a green result.
 
-The UI is at [http://127.0.0.1:3030](http://127.0.0.1:3030) after you start the server.
+The UI is at [http://127.0.0.1:3030](http://127.0.0.1:3030) after you start the server. The full guide for installing, allowing a host, running the sample, and reading a verdict is [docs/USAGE.md](docs/USAGE.md).
+
+This repository is a local generator and runner. It is separate from the [Feather Wand plugin](https://jmeter.ai/products/feather-wand/) that chats inside the JMeter window.
 
 ## Requirements
 
