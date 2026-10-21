@@ -72,6 +72,41 @@
         </fieldset>
 
         <fieldset>
+          <legend>Model</legend>
+          <label for="llm-provider">Provider</label>
+          <select id="llm-provider">
+            <option value="openai">OpenAI</option>
+            <option value="azure-openai">Azure OpenAI</option>
+            <option value="anthropic">Claude</option>
+            <option value="gemini">Gemini</option>
+            <option value="groq">Groq</option>
+            <option value="openrouter">OpenRouter</option>
+            <option value="deepseek">DeepSeek</option>
+            <option value="mistral">Mistral</option>
+            <option value="together">Together</option>
+            <option value="xai">Grok</option>
+            <option value="fireworks">Fireworks</option>
+            <option value="perplexity">Perplexity</option>
+            <option value="ollama">Ollama</option>
+            <option value="custom">Other OpenAI-compatible</option>
+          </select>
+          <label for="llm-model">Model</label>
+          <input id="llm-model" autocomplete="off">
+          <div id="llm-endpoint">
+            <label for="llm-base">Endpoint</label>
+            <input id="llm-base" type="url" autocomplete="off" placeholder="https://your-resource.openai.azure.com">
+          </div>
+          <div id="llm-version" hidden>
+            <label for="llm-api-version">API version</label>
+            <input id="llm-api-version" autocomplete="off" value="2024-10-21">
+          </div>
+          <label for="llm-key">API key</label>
+          <input id="llm-key" type="password" autocomplete="off">
+          <p id="llm-note" class="hint"></p>
+          <button type="button" id="llm-save" class="ghost">Save provider</button>
+        </fieldset>
+
+        <fieldset>
           <legend>Credentials</legend>
           <label for="auth">Auth</label>
           <select id="auth" name="auth">

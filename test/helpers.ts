@@ -16,6 +16,10 @@ export function testConfig(dataDir: string, overrides: Partial<AppConfig> = {}):
   return loadConfig(process.cwd(), {
     dataDir,
     llmApiKey: '',
+    llmEnvKey: '',
+    llmActive: 'openai',
+    llmProviders: {},
+    rootDir: dataDir,
     jmeterBin: '',
     allowedHosts: ['127.0.0.1', 'localhost'],
     maxThreads: 20,

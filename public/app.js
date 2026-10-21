@@ -56,11 +56,15 @@ jobDetail.addEventListener('submit', (event) => {
 
 showSource('openapi')
 showAuth('none')
+document.querySelector('#llm-provider').addEventListener('change', () => showProvider(document.querySelector('#llm-provider').value))
+document.querySelector('#llm-save').addEventListener('click', () => { void saveProvider() })
 void boot()
 
 async function boot() {
   state.workbench = await api('/workbench')
+  state.llm = await api('/llm')
   fillDefaults(state.workbench)
+  renderProviders(state.llm)
   renderStatus(state.workbench)
   await refreshJobs()
   window.setInterval(() => {
@@ -83,7 +87,7 @@ function renderStatus(workbench) {
     ? '<span class="chip good">JMeter ready</span>'
     : '<span class="chip warn">JMETER_BIN is not set</span>'
   const llm = workbench.llmConfigured
-    ? '<span class="chip good">LLM planner on</span>'
+    ? `<span class="chip good">${escapeHtml(workbench.llmLabel || 'Model')} on</span>`
     : '<span class="chip">Deterministic planner</span>'
   statusBar.innerHTML = `${jmeter}${llm}<span class="chip">Cap ${workbench.maxThreads} threads / ${workbench.maxDurationSec}s</span>${hosts}`
 }
@@ -97,6 +101,54 @@ function showSource(source) {
 function showAuth(kind) {
   document.querySelector('#auth-bearer').hidden = kind !== 'bearer'
   document.querySelector('#auth-basic').hidden = kind !== 'basic'
+}
+
+function renderProviders(catalog) {
+  state.llm = catalog
+  const select = document.querySelector('#llm-provider')
+  const selected = catalog.providers.some((provider) => provider.id === catalog.active) ? catalog.active : select.value
+  select.innerHTML = catalog.providers.map((provider) => `<option value="${escapeHtml(provider.id)}">${escapeHtml(provider.label)}</option>`).join('')
+  select.value = selected
+  showProvider(selected)
+}
+
+function showProvider(id) {
+  const provider = state.llm?.providers?.find((item) => item.id === id)
+  document.querySelector('#llm-endpoint').hidden = !provider || provider.endpoint === 'hidden'
+  document.querySelector('#llm-version').hidden = provider?.id !== 'azure-openai'
+  if (!provider) return
+  document.querySelector('#llm-model').value = provider.model || provider.defaultModel
+  document.querySelector('#llm-base').value = provider.baseUrl || provider.defaultBaseUrl
+  document.querySelector('#llm-api-version').value = provider.apiVersion || provider.defaultApiVersion || '2024-10-21'
+  document.querySelector('#llm-key').value = ''
+  document.querySelector('#llm-key').placeholder = provider.hasKey ? 'Saved on this machine' : (provider.keyOptional ? 'Optional for local Ollama' : 'Paste an API key')
+  const note = provider.keySource === 'environment'
+    ? 'OpenAI is using LLM_API_KEY from the environment. Saving a key here stores it in config/local.json instead.'
+    : provider.keySource === 'saved'
+      ? `${provider.label} has a key in config/local.json. Leave the field blank to keep it.`
+      : 'The key stays in config/local.json on this machine and is not shown again.'
+  document.querySelector('#llm-note').textContent = note
+}
+
+async function saveProvider() {
+  const note = document.querySelector('#llm-note')
+  note.textContent = ''
+  const id = document.querySelector('#llm-provider').value
+  const body = {
+    id,
+    model: document.querySelector('#llm-model').value.trim(),
+    baseUrl: document.querySelector('#llm-base').value.trim(),
+    apiVersion: document.querySelector('#llm-api-version').value.trim(),
+    apiKey: document.querySelector('#llm-key').value
+  }
+  try {
+    renderProviders(await api('/llm', { method: 'POST', body: JSON.stringify(body) }))
+    state.workbench = await api('/workbench')
+    renderStatus(state.workbench)
+    document.querySelector('#llm-note').textContent = 'Saved. The next run uses this provider.'
+  } catch (error) {
+    note.textContent = error.message
+  }
 }
 
 async function readFileInto(input, selector) {

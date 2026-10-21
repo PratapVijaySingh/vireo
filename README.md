@@ -12,7 +12,7 @@ This repository is a local generator and runner. It is separate from the [Feathe
 
 - Node.js 20 or newer
 - Apache JMeter 5.6, with `JMETER_BIN` pointing at `jmeter.bat` (Windows) or the `jmeter` launcher
-- An OpenAI-compatible API key if you want the planner and reviewer to use a model. Without a key, the workbench still builds scripts, runs them, and applies deterministic corrections
+- A provider key if you want the planner and reviewer to use a model. Save it under **Model** in the UI. Without a key, the workbench still builds scripts, runs them, and applies deterministic corrections
 - Playwright Chromium only for the URL-and-journey intake: `npx playwright install chromium`
 
 ## Run
@@ -70,13 +70,15 @@ Each job stops after at most three iterations.
 - `GET /jobs` lists runs. Tokens and passwords are redacted.
 - `GET /jobs/:id` returns status, iteration, verdict, history, and artifact paths.
 - `PATCH /jobs/:id` with `{ "answers": { "token": "...", "p95Ms": "500" } }` resumes a run that is waiting for input.
-- `GET /workbench` returns allowlist, load caps, and whether JMeter and the LLM are configured. It does not return secrets.
+- `GET /workbench` returns allowlist, load caps, and whether JMeter and a model provider are configured. It does not return secrets.
+- `GET /llm` lists providers and whether a key is saved. It does not return the key.
+- `POST /llm` with `{ "id": "anthropic", "apiKey": "...", "model": "claude-sonnet-4-5" }` saves that provider on this machine and selects it.
 - `GET /files/:id/plan.jmx` downloads the generated script.
 - `GET /files/:id/report/index.html` opens the JMeter dashboard.
 
 ## Configure
 
-Defaults live in [config/default.json](config/default.json). Add hosts you are allowed to test in `config/local.json` (this file stays on your machine):
+Defaults live in [config/default.json](config/default.json). Add hosts you are allowed to test, and save model keys, in `config/local.json` (this file stays on your machine):
 
 ```json
 { "allowedHosts": ["my-app.example.com"] }
@@ -89,7 +91,7 @@ Restart after editing it. `config/local.json` is merged with the defaults. Envir
 | `JMETER_BIN` | Path to `jmeter.bat` or `jmeter` |
 | `LLM_BASE_URL` | OpenAI-compatible base URL. Default `https://api.openai.com/v1` |
 | `LLM_MODEL` | Model name. Default `gpt-4o-mini` |
-| `LLM_API_KEY` | Key for the planner and reviewer |
+| `LLM_API_KEY` | OpenAI key used when no provider is saved in the UI |
 | `ALLOWED_HOSTS` | Comma-separated hostnames. When set, this replaces the file list. Default `127.0.0.1,localhost` |
 | `MAX_THREADS` | Hard cap. Default `20` |
 | `MAX_DURATION_SEC` | Hard cap. Default `120` |

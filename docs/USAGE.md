@@ -69,15 +69,9 @@ npm start
 
 Open [http://127.0.0.1:3030](http://127.0.0.1:3030).
 
-The status bar shows whether JMeter is ready, whether a model is configured, the load cap, and the allowed hosts. `JMETER_BIN` here is the launcher file. JMeter's own scripts expect `JMETER_BIN` to be a directory. The runner sets the child process to that directory so the launcher still starts.
+The status bar shows whether JMeter is ready, which model provider is saved, the load cap, and the allowed hosts. `JMETER_BIN` here is the launcher file. JMeter's own scripts expect `JMETER_BIN` to be a directory. The runner sets the child process to that directory so the launcher still starts.
 
-Leave `LLM_API_KEY` unset for the first run. Add it later when you want the planner to use a model:
-
-```powershell
-$env:LLM_API_KEY = 'your-key'
-$env:LLM_MODEL = 'gpt-4o-mini'
-npm start
-```
+Leave the model unset for the first run. When you want a planner, open **Model** in the UI, choose a provider, and save the key. Section 10 lists the providers. `LLM_API_KEY` is only the OpenAI fallback for a machine where no provider has been saved.
 
 ## 3. Allow the system you are testing
 
@@ -284,7 +278,9 @@ Journey body:
 | `GET /jobs` | List of runs. Secrets are redacted. |
 | `GET /jobs/:id` | One run: status, iteration, verdict, history, questions, artifact paths. |
 | `PATCH /jobs/:id` | Resume a `needs_input` run with `{ "answers": { ... } }`. |
-| `GET /workbench` | Allowed hosts, caps, and whether JMeter and the model are configured. No secrets. |
+| `GET /workbench` | Allowed hosts, caps, and whether JMeter and a model provider are configured. No secrets. |
+| `GET /llm` | Provider list, selected provider, and whether each key is saved. No secrets. |
+| `POST /llm` | Save and select a provider. Body: `{ "id": "gemini", "apiKey": "...", "model": "gemini-2.5-flash" }`. Azure also needs `baseUrl`. An empty `apiKey` keeps the saved key. |
 | `GET /files/:id/plan.jmx` | Download the generated script. |
 | `GET /files/:id/report/index.html` | JMeter HTML dashboard. |
 
@@ -305,9 +301,21 @@ Each run is a folder under `data/jobs/<id>/`:
 
 `data/` is gitignored. Delete a job folder when you no longer need the script or the report.
 
-## 10. What the model does
+## 10. Choose a model
 
-With no `LLM_API_KEY`, the planner adds a 200 ms think time and a status assertion, and the reviewer applies fixed corrections. The UI says **Deterministic planner**.
+Open **Model** on the new-measurement form, choose a provider, paste its key, and click **Save provider**. The key is written to `config/local.json` on this machine and is not returned by the API. Leave the key field blank later to keep the saved key and change only the model. The status chip names the provider that is on, for example **Claude on**.
+
+| Provider | What to enter |
+| --- | --- |
+| OpenAI | API key. Default model `gpt-4o-mini`. |
+| Azure OpenAI | Resource endpoint, such as `https://my-resource.openai.azure.com`, API key, and the deployment name in **Model**. API version defaults to `2024-10-21`. |
+| Claude | Anthropic API key. Default model `claude-sonnet-4-5`. |
+| Gemini | Google API key. Default model `gemini-2.5-flash`. |
+| Groq, OpenRouter, DeepSeek, Mistral, Together, Grok, Fireworks, Perplexity | That provider's API key. The model field is filled with a default you can change. |
+| Ollama | Local endpoint, default `http://127.0.0.1:11434/v1`. A key is optional. |
+| Other OpenAI-compatible | Endpoint, model name, and API key. |
+
+With no saved provider, the planner adds a 200 ms think time and a status assertion, and the reviewer applies fixed corrections. The UI says **Deterministic planner**.
 
 With a key, two steps may call the model:
 
@@ -316,18 +324,18 @@ With a key, two steps may call the model:
 
 The model cannot change the target host, invent a password, delete a call, drop an assertion, change the load during review, or loosen the goal. A plan that breaks those rules is discarded.
 
-`LLM_BASE_URL` defaults to `https://api.openai.com/v1`. Any compatible chat-completions endpoint works. `LLM_MODEL` defaults to `gpt-4o-mini`.
+`LLM_API_KEY`, `LLM_BASE_URL`, and `LLM_MODEL` still select OpenAI when you have not saved a provider. A provider saved in the UI is the one the next run uses.
 
 ## 11. Configuration reference
 
-[config/default.json](../config/default.json) holds the shared defaults. `config/local.json` adds allowed hosts on your machine. Environment variables override both.
+[config/default.json](../config/default.json) holds the shared defaults. `config/local.json` adds allowed hosts and saved provider keys on your machine. Do not commit that file. Environment variables override the shared defaults. A provider saved in the UI is used instead of `LLM_API_KEY`.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `JMETER_BIN` | empty | Path to `jmeter.bat` or `jmeter`. |
-| `LLM_BASE_URL` | `https://api.openai.com/v1` | OpenAI-compatible base URL. |
-| `LLM_MODEL` | `gpt-4o-mini` | Model name. |
-| `LLM_API_KEY` | empty | Key for the planner and reviewer. |
+| `LLM_BASE_URL` | `https://api.openai.com/v1` | OpenAI base URL when no provider is saved in the UI. |
+| `LLM_MODEL` | `gpt-4o-mini` | OpenAI model when no provider is saved in the UI. |
+| `LLM_API_KEY` | empty | OpenAI key when no provider is saved in the UI. |
 | `ALLOWED_HOSTS` | `127.0.0.1,localhost` | Comma-separated hostnames. Replaces the file list when set. |
 | `MAX_THREADS` | `20` | Hard cap. |
 | `MAX_DURATION_SEC` | `120` | Hard cap. |

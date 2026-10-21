@@ -34,6 +34,9 @@ describe('workbench UI', () => {
     const html = await response.text()
     assert.match(html, /Vireo/)
     assert.match(html, /New measurement/)
+    assert.match(html, /Claude/)
+    assert.match(html, /Azure OpenAI/)
+    assert.match(html, /Gemini/)
   })
 
   it('returns public limits and hides secrets', async () => {

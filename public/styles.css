@@ -118,6 +118,7 @@ button.ghost, a.ghost {
 }
 a.ghost { display: inline-block; text-decoration: none; border-radius: 0.65rem; padding: 0.55rem 0.8rem; }
 .error { color: var(--bad); min-height: 1.2rem; }
+.hint { color: var(--muted); font-size: 0.86rem; margin: 0.6rem 0; }
 .runs { display: grid; gap: 1rem; }
 .job-list { display: grid; gap: 0.45rem; }
 .job-button {

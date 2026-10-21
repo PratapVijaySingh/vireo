@@ -1,6 +1,8 @@
 import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs'
 import { extname, resolve, sep } from 'node:path'
 import type { Context, Next } from 'koa'
+import { llmReady } from '../agents/llm'
+import { providerById } from '../agents/providers'
 import type { AppConfig } from '../config'
 import type { JobRecord } from '../model/job'
 
@@ -16,7 +18,9 @@ export function publicWorkbench(config: AppConfig) {
     defaultRampUpSec: config.defaultRampUpSec,
     maxIterations: config.maxIterations,
     jmeterConfigured: Boolean(config.jmeterBin),
-    llmConfigured: Boolean(config.llmApiKey)
+    llmConfigured: llmReady(config),
+    llmLabel: providerById(config.llmActive)?.label ?? 'OpenAI',
+    llmModel: config.llmModel
   }
 }
 
